@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class TimerController : BaseController
 {
     private float timerTime;
-    private Transform timer;
     private Slider slider;
 
     [SerializeField]
@@ -16,8 +15,7 @@ public class TimerController : BaseController
 
     void Awake()
     {
-        timer = GetComponent<Transform>();
-        slider = timer.gameObject.GetComponentInChildren<Slider>();
+        slider = GetComponentInChildren<Slider>();
     }
 
 
@@ -43,7 +41,7 @@ public class TimerController : BaseController
 
     void FixedUpdate()
     {
-        RunTimer();
+       if (Enabled) RunTimer();
     }
 
     internal void SetLasting(float lasing)

@@ -14,7 +14,7 @@ public class OrtographicPlaneCamera : MonoBehaviour
 
     private void Awake()
     {
-        camera2D = GetComponent<Camera>();
+        camera2D = Camera.main;
         camera2D.orthographic = true;
 
         if (uniform)

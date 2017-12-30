@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameController : BaseController
 {
+    public UIManager uiManager;
+
     public Transform camera2D;
     private Transform canvas;
 
@@ -14,37 +16,71 @@ public class GameController : BaseController
 
     private FigureController[] squaresOnScene;
     private FigureController[] circlesOnScene;
-    private GameSettings gamesettings; // Потом надо убрать и сосдавать по входу в игру!
     public GameSettings.Settings settings;
+    public bool IsLevelDone = false;
 
 
     void Awake()
     {
-        camera2D = GameObject.FindGameObjectWithTag("MainCamera").transform;
+        camera2D = Camera.main.transform;
         canvas = GameObject.Find("Canvas").transform;
+
         countOfSquares = 3;
         countOfCircles = 3;
-        GameObject squaresBox = new GameObject();
-        GameObject circlesBox = new GameObject();
         squaresOnScene = new FigureController[countOfSquares];
         circlesOnScene = new FigureController[countOfCircles];
-        gamesettings = new GameSettings();
-        settings = gamesettings.SettingsGame;
+        settings = new GameSettings().SettingsGame;
     }
 
     public void StartGame()
     {
-        On();
         CreateSquares(countOfSquares);
         CreateCircles(countOfCircles);
+        IsLevelDone = true;
     }
 
     public void EndGame()
     {
-        squaresBox.gameObject.SetActive(false);
-        circlesBox.gameObject.SetActive(false);
-        CreateCircles(countOfCircles);
-        Off();
+        Destroy(squaresBox, 1f);
+        Destroy(circlesBox, 1f);
+    }
+
+    public override void On()
+    {
+        base.On();
+        if (squaresBox != null)
+        {
+            foreach (var figure in squaresOnScene)
+                figure.On();
+
+            squaresBox.gameObject.SetActive(true);
+        }
+        if (circlesBox != null)
+        {
+            foreach (var figure in circlesOnScene)
+                figure.On();
+
+            circlesBox.gameObject.SetActive(true);
+        }
+    }
+
+    public override void Off()
+    {
+        base.Off();
+        if (squaresBox != null)
+        {
+            foreach (var figure in squaresOnScene)
+                figure.Off();
+
+            squaresBox.gameObject.SetActive(false);
+        }
+        if (circlesBox != null)
+        {
+            foreach (var figure in squaresOnScene)
+                figure.Off();
+
+            circlesBox.gameObject.SetActive(false);
+        }
     }
 
     public void CreateSquares(int count)
@@ -55,21 +91,13 @@ public class GameController : BaseController
 
         for (int i = 0; i < count; i++)
         {
-            Vector3 offset = new Vector3(-30, 30 * (i - 1), 10);
+            Vector3 offset = new Vector3(-30, 30 * (i - 1), 3);
             Vector3 position = camera2D.position + offset;
-            var square = Instantiate(PrefabStore.Instance.GetSquarePrefab(), position, Quaternion.identity, squaresBox.transform);
 
-            var colorId = Random.Range(0, settings.ListOfFigureColors.Count - 1);
-            var color = settings.ListOfFigureColors.ElementAt(colorId);
-            if (squaresOnScene != null || squaresOnScene.FirstOrDefault(f => f.Color == color) == null)
-            {
-                square.AddComponent<FigureController>();
-                squaresOnScene[i] = square.GetComponent<FigureController>();
-                squaresOnScene[i].SetColor(color);
-                squaresOnScene[i].TypeFigure = FigureController.FigureType.Square;
+            var square = CreateFigure(FigureController.FigureType.Square, position);
+            square.transform.SetParent(squaresBox.transform);
 
-                square.AddComponent<FigureMouseController>();
-            }
+            if (squaresOnScene != null) squaresOnScene[i] = square.GetComponent<FigureController>();
             else i--;
 
         }
@@ -83,27 +111,60 @@ public class GameController : BaseController
 
         for (int i = 0; i < count; i++)
         {
-            Vector3 offset = new Vector3(30, 30 * (i - 1), 10);
+            Vector3 offset = new Vector3(30, 30 * (i - 1), 3);
             Vector3 position = camera2D.position + offset;
-            var circle = Instantiate(PrefabStore.Instance.GetCicrlePrefab(), position, Quaternion.identity, circlesBox.transform);
 
-            var colorId = Random.Range(0, settings.ListOfFigureColors.Count - 1);
-            var color = settings.ListOfFigureColors.ElementAt(colorId);
-            if (squaresOnScene != null || circlesOnScene.FirstOrDefault(f => f.Color == color) == null)
-            {
-                circle.AddComponent<FigureController>();
-                circlesOnScene[i] = circle.GetComponent<FigureController>();
-                circlesOnScene[i].SetColor(color);
-                circlesOnScene[i].TypeFigure = FigureController.FigureType.Circle;
+            var circle = CreateFigure(FigureController.FigureType.Circle, position);
+            circle.transform.SetParent(circlesBox.transform);
 
-                var lasingId = Random.Range(0, settings.ListOfTimerLastings.Count - 1);
-                var lasting = settings.ListOfTimerLastings.ElementAt(lasingId);
-                circle.AddComponent<TimerController>();
-                circle.GetComponent<TimerController>().SetLasting(lasting);
-            }
+            if (circlesOnScene != null) circlesOnScene[i] = circle.GetComponent<FigureController>();
             else i--;
 
         }
+    }
+
+    private GameObject CreateFigure(FigureController.FigureType figureType, Vector3 position)
+    {
+        GameObject prefab = null; 
+        if (figureType == FigureController.FigureType.Square) prefab = PrefabStore.Instance.GetSquarePrefab();
+        if (figureType == FigureController.FigureType.Circle) prefab = PrefabStore.Instance.GetCicrlePrefab();
+
+        var figure = Instantiate(prefab, position, Quaternion.identity);
+
+        var figureController = figure.AddComponent<FigureController>();
+        figureController.TypeFigure = figureType;
+        figureController.HomePosition = position;
+        SetNewColor(figureController);
+
+        if (figureType == FigureController.FigureType.Circle)
+        {
+            var timer = figure.AddComponent<TimerController>();
+            SetNewTimerLasting(timer);
+        }
+
+        return figure;
+    }
+
+    private void DeleteFigure(GameObject figure)
+    {
+        Destroy(figure, 0.1f);
+    }
+
+    public void ReplaceFigure(GameObject figure)
+    {
+        var figureBox = figure.transform.parent; ;
+        var figureController = figure.GetComponent<FigureController>();
+        var figureType = figureController.TypeFigure;
+        var figureHomePosition = figureController.HomePosition;
+
+        var ListOfFiguresType = (figureType == FigureController.FigureType.Square) ? squaresOnScene : circlesOnScene;
+        var indexOfLastFigure = ListOfFiguresType.ToList().FindIndex(fc => fc == figureController);
+
+        DeleteFigure(figure);
+        var newFigure = CreateFigure(figureType, figureHomePosition);
+        ListOfFiguresType[indexOfLastFigure] = newFigure.GetComponent<FigureController>();
+        newFigure.transform.SetParent(figureBox);
+
     }
 
     private void SetNewColor(FigureController figure)
@@ -111,20 +172,16 @@ public class GameController : BaseController
         var ListOfFiguresType = (figure.TypeFigure == FigureController.FigureType.Square) ? squaresOnScene : circlesOnScene;
         var colorId = Random.Range(0, settings.ListOfFigureColors.Count - 1);
         var color = settings.ListOfFigureColors.ElementAt(colorId);
-        if (ListOfFiguresType.FirstOrDefault(f => f.Color == color) == null) figure.SetColor(color);
+
+        if (ListOfFiguresType.FirstOrDefault(f => f != null && f.Color == color) == null) figure.SetColor(color);
         else SetNewColor(figure);
     }
 
-    private void UpdateTimerLasting(TimerController timer)
+    private void SetNewTimerLasting(TimerController figureTimer)
     {
-        var lastingId = Random.Range(0, settings.ListOfTimerLastings.Count - 1);
-        var lasing = settings.ListOfTimerLastings.ElementAt(lastingId);
-        timer.SetLasting(lasing);
-    }
-
-    private void UpdateMouseInteract(FigureMouseController figureMouse)
-    {
-        figureMouse.UpdateMouse();
+        var lasingId = Random.Range(0, settings.ListOfTimerLastings.Count - 1);
+        var lasting = settings.ListOfTimerLastings.ElementAt(lasingId);
+        figureTimer.SetLasting(lasting);
     }
 
     private void UpdateFigures(FigureController[] figuresOnScene)
@@ -140,8 +197,8 @@ public class GameController : BaseController
             if (!figureOnScene.Enabled)
             {
                 SetNewColor(figureOnScene);
-                if (figureOnScene.TypeFigure == FigureController.FigureType.Circle) UpdateTimerLasting(figureOnScene.gameObject.GetComponent<TimerController>());
-                if (figureOnScene.TypeFigure == FigureController.FigureType.Square) UpdateMouseInteract(figureOnScene.gameObject.GetComponent<FigureMouseController>());
+                if (figureOnScene.TypeFigure == FigureController.FigureType.Circle) SetNewTimerLasting(figureOnScene.GetComponent<TimerController>());
+                figureOnScene.transform.position = figureOnScene.HomePosition;
                 figureOnScene.On();
             }
 

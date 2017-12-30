@@ -24,9 +24,9 @@ public class UIMenuController : BaseController
     private void Awake()
     {
         uiManager = GameObject.FindObjectOfType<UIManager>();
-        uiMenuPanel = gameObject.GetComponent<RectTransform>();
+        uiMenuPanel = GetComponent<RectTransform>();
 
-        var inscriptions = uiMenuPanel.gameObject.GetComponentsInChildren<Text>();
+        var inscriptions = uiMenuPanel.GetComponentsInChildren<Text>();
         time = inscriptions[0];
         textScore = inscriptions[1];
         textGame = inscriptions[2];
@@ -36,11 +36,14 @@ public class UIMenuController : BaseController
       
         timeLevel = uiMenuPanel.gameObject.AddComponent<TimeLevel>();
         timeLevel.SecondsLevelLasting = (secondsLevelLasting != 0) ? secondsLevelLasting : 30f;
-        timeLevel.IsEnded += EndLevel;
-        timeLevel.IsTimeChanged += ShowTime;
+        timeLevel.Ended += EndLevel;
+        timeLevel.TimeChanged += ShowTime;
 
-        scoreLevel = uiMenuPanel.gameObject.GetComponentInParent<Score>();
-        scoreLevel.IsScoreChanged += ShowScore;
+        scoreLevel = uiMenuPanel.gameObject.GetComponent<Score>();
+        scoreLevel.ScoreChanged += ShowScore;
+
+        textScore.text = "Score / Best Score";
+        textGame.text = "Played games";
 
         if (uiMenuPanel != null) uiMenuPanel.gameObject.SetActive(false);
     }
@@ -48,15 +51,16 @@ public class UIMenuController : BaseController
     public void StartLevel()
     {
         On();
-        ShowTime();
-        ShowScore();
-        bestScore.text = scoreLevel.BestScoreNumber.ToString();
-        gameNumber.text = scoreLevel.GameNumber.ToString();
+        uiManager.gameController.On();
+        uiManager.mouseInputController.On();
+        uiManager.mainMenu.Off();
     }
 
     public void EndLevel()
     {
-        uiManager.uiMenu.On();
+        uiManager.mainMenu.On();
+        uiManager.mouseInputController.Off();
+        uiManager.gameController.Off();
         Off();
     }
 
@@ -64,17 +68,22 @@ public class UIMenuController : BaseController
     public override void On()
     {
         base.On();
+        if (uiMenuPanel != null) uiMenuPanel.gameObject.SetActive(true);
         timeLevel.StartTime();
         scoreLevel.StartScore();
-        if (uiMenuPanel != null) uiMenuPanel.gameObject.SetActive(true);
+
+        ShowTime();
+        ShowScore();
+        ShowBestScore();
+        ShowGameNumber();
     }
 
     public override void Off()
     {
         base.Off();
+        if (uiMenuPanel != null) uiMenuPanel.gameObject.SetActive(false);
         timeLevel.EndTime();
         scoreLevel.EndScore();
-        if (uiMenuPanel != null) uiMenuPanel.gameObject.SetActive(false);
     }
 
     private void ShowTime()
@@ -85,5 +94,15 @@ public class UIMenuController : BaseController
     private void ShowScore()
     {
         score.text = scoreLevel.ScoreNumber.ToString();
+    }
+
+    private void ShowBestScore()
+    {
+        bestScore.text = scoreLevel.BestScoreNumber.ToString();
+    }
+
+    private void ShowGameNumber()
+    {
+        gameNumber.text = scoreLevel.GameNumber.ToString();
     }
 }

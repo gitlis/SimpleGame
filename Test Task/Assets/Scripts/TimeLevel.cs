@@ -10,8 +10,8 @@ public class TimeLevel : MonoBehaviour
     private WaitForSeconds delayLevelTime;
 
     public delegate void Event();
-    public event Event IsTimeChanged;
-    public event Event IsEnded;
+    public event Event TimeChanged;
+    public event Event Ended;
 
 
     private void Awake()
@@ -29,14 +29,13 @@ public class TimeLevel : MonoBehaviour
     public void EndTime()
     {
         StopCoroutine(WorkingLevelTime());
-        IsEnded.Invoke();
     }
 
     public void GetRemainedTime()
     {
         int minutes = (int)(RemainedLevelSeconds / 60);
         int seconds = (int)(RemainedLevelSeconds % 60);
-        IsTimeChanged.Invoke();
+        TimeChanged.Invoke();
         RemainedTime = minutes.ToString() + " : " + seconds.ToString();
     }
 
@@ -47,6 +46,7 @@ public class TimeLevel : MonoBehaviour
             if (RemainedLevelSeconds == 0)
             {
                 EndTime();
+                Ended.Invoke();
             }
             else
             {

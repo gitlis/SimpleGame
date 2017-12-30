@@ -7,12 +7,14 @@ public class FigureController : BaseController
     private Transform figure;
     private SpriteRenderer sRenderer;
     private TimerController timer;
-    private FigureMouseController figureMouse;
 
     [SerializeField]
     public Color Color { get; set; }
     [SerializeField]
     public FigureType TypeFigure { get; set; }
+
+    public Vector3 HomePosition { get; set; }
+    public bool IsCatched;
 
     public enum FigureType
     {
@@ -24,12 +26,12 @@ public class FigureController : BaseController
     {
         figure = GetComponent<Transform>();
         sRenderer = GetComponent<SpriteRenderer>();
+        IsCatched = false;
     }
 
     void Start()
     {
-        if (TypeFigure == FigureType.Square) figureMouse = figure.gameObject.GetComponentInChildren<FigureMouseController>();
-        if (TypeFigure == FigureType.Circle) timer = figure.gameObject.GetComponentInChildren<TimerController>();
+        if (TypeFigure == FigureType.Circle) timer = figure.GetComponentInChildren<TimerController>();
         On();
     }
 
@@ -39,11 +41,22 @@ public class FigureController : BaseController
         sRenderer.color = Color;
     }
 
+    public void ReturnToHome()
+    {
+       if (!IsCatched) StartCoroutine(ReturnFigure());
+       StopCoroutine(ReturnFigure());
+    }
+
     public override void On()
     {
         base.On();
         if (timer != null) timer.On();
-        if (figureMouse != null) figureMouse.On();
+    }
+
+    public override void Off()
+    {
+        base.Off();
+        if (timer != null) timer.Off();
     }
 
     void FixedUpdate()
@@ -53,11 +66,19 @@ public class FigureController : BaseController
             if (!timer.Enabled) Off();
 
         }
+    }
 
-        if (TypeFigure == FigureType.Square)
+    private IEnumerator ReturnFigure()
+    {
+        while (figure.position != HomePosition)
         {
-            if (!figureMouse.Enabled) Off();
-        } 
+            if (IsCatched) break;
+
+            var direction = HomePosition - figure.position;
+            figure.Translate(direction * Time.deltaTime);
+            yield return new WaitForEndOfFrame();
+
+        }
     }
 
 }
