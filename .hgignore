@@ -1,0 +1,12 @@
+syntax: glob
+Library
+obj
+Temp
+Test Task.csproj.user
+Test Task.userprefs
+*.booproj
+*.csproj
+*.unityproj
+*.pidb
+*.sln
+*.suo
