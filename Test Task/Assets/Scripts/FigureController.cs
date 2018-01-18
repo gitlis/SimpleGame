@@ -1,12 +1,11 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FigureController : BaseController
 {
     private Transform figure;
-    private SpriteRenderer sRenderer;
     private TimerController timer;
+    public SpriteRenderer spriteRenderer;
 
     [SerializeField]
     public Color Color { get; set; }
@@ -25,7 +24,7 @@ public class FigureController : BaseController
     void Awake ()
     {
         figure = GetComponent<Transform>();
-        sRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         IsCatched = false;
     }
 
@@ -38,7 +37,7 @@ public class FigureController : BaseController
     public void SetColor(Color color)
     {
         Color = color;
-        sRenderer.color = Color;
+        spriteRenderer.color = Color;
     }
 
     public void ReturnToHome()
@@ -73,10 +72,12 @@ public class FigureController : BaseController
         while (figure.position != HomePosition)
         {
             if (IsCatched) break;
-
-            var direction = HomePosition - figure.position;
-            figure.Translate(direction * Time.deltaTime);
-            yield return new WaitForEndOfFrame();
+            else
+            {
+                var direction = HomePosition - figure.position;
+                figure.Translate(direction * Time.deltaTime);
+                yield return new WaitForEndOfFrame();
+            }
 
         }
     }

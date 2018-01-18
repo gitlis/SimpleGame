@@ -3,28 +3,27 @@
 public class PrefabStore : MonoBehaviour
 {
 
-    [Header("Префабы")]
+    [Header("Prefabs")]
 
     [SerializeField]
-    public GameObject Square;
+    public GameObject square;
     [SerializeField]
-    public GameObject Circle;
+    public GameObject circle;
 
-    public static PrefabStore Instance { get; set; }
 
-    // Use this for initialization
     void Awake()
     {
-        Instance = this;
+        square = Resources.Load<GameObject>("Square");
+        circle = Resources.Load<GameObject>("Circle");
     }
 
     public GameObject GetSquarePrefab()
-    {
-        return Square;
+    { 
+        return square;
     }
 
     public GameObject GetCicrlePrefab()
     {
-        return Circle;
+        return circle;
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class TimerController : BaseController
@@ -12,12 +9,10 @@ public class TimerController : BaseController
     [SerializeField]
     public float TimerSecondsLasting { get; set; }
 
-
     void Awake()
     {
         slider = GetComponentInChildren<Slider>();
     }
-
 
     private void RunTimer()
     {

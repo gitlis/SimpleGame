@@ -1,10 +1,8 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class UIMenuController : BaseController
 {
-
     private RectTransform uiMenuPanel;
     private UIManager uiManager;
 
@@ -35,7 +33,7 @@ public class UIMenuController : BaseController
         gameNumber = inscriptions[5];
       
         timeLevel = uiMenuPanel.gameObject.AddComponent<TimeLevel>();
-        timeLevel.SecondsLevelLasting = (secondsLevelLasting != 0) ? secondsLevelLasting : 30f;
+        timeLevel.SecondsLevelLasting = (secondsLevelLasting != 0) ? secondsLevelLasting : secondsLevelLasting = 30f;
         timeLevel.Ended += EndLevel;
         timeLevel.TimeChanged += ShowTime;
 
@@ -54,6 +52,7 @@ public class UIMenuController : BaseController
         uiManager.gameController.On();
         uiManager.mouseInputController.On();
         uiManager.mainMenu.Off();
+
     }
 
     public void EndLevel()
@@ -63,7 +62,6 @@ public class UIMenuController : BaseController
         uiManager.gameController.Off();
         Off();
     }
-
 
     public override void On()
     {

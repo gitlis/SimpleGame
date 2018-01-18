@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class MainMenuController : BaseController
@@ -15,7 +12,7 @@ public class MainMenuController : BaseController
     private Text startText;
     private Text gameText;
 
-    private void Awake()
+    void Awake()
     {
         mainMenuPanel = GetComponent<RectTransform>();
         uiManager = GameObject.FindObjectOfType<UIManager>();
@@ -27,13 +24,11 @@ public class MainMenuController : BaseController
         AddButtonEvents();
         var mainMenuText = mainMenuPanel.GetComponentsInChildren<Text>();
         startText = mainMenuText[2];
-        startText.text = "Game 'Squares'";
+        startText.text = "Game Squares";
         gameText = mainMenuText[3];
-        gameText.text = "Game 'Squares'\n\r You got score:\n\r 0";
+        gameText.text = "Game Squares\n\r You got score:\n\r 0";
         gameText.gameObject.SetActive(false);
 
-
-        //uiManager.score.ScoreChanged += ShowScore;
     }
 
     private void AddButtonEvents()
@@ -83,7 +78,7 @@ public class MainMenuController : BaseController
 
     private void ShowScoreInMenu()
     {
-        string inscription = "Game 'Squares'\n\r You got score:\n\r";
+        string inscription = "Game Squares\n\r You got score:\n\r";
         gameText.text = inscription + uiManager.score.ScoreNumber.ToString();
     }
 

@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 public class GameController : BaseController
 {
-    public UIManager uiManager;
+    private UIManager uiManager;
 
     public Transform camera2D;
     private Transform canvas;
@@ -16,20 +15,24 @@ public class GameController : BaseController
 
     private FigureController[] squaresOnScene;
     private FigureController[] circlesOnScene;
-    public GameSettings.Settings settings;
-    public bool IsLevelDone = false;
+
+    private GameSettings.Settings settings;
+    public bool IsLevelDone;
 
 
     void Awake()
     {
         camera2D = Camera.main.transform;
         canvas = GameObject.Find("Canvas").transform;
+        uiManager = GameObject.FindObjectOfType<UIManager>();
 
         countOfSquares = 3;
         countOfCircles = 3;
         squaresOnScene = new FigureController[countOfSquares];
         circlesOnScene = new FigureController[countOfCircles];
-        settings = new GameSettings().SettingsGame;
+        IsLevelDone = false;
+
+        settings = uiManager.gameSettings.SettingsGame;
     }
 
     public void StartGame()
@@ -126,8 +129,8 @@ public class GameController : BaseController
     private GameObject CreateFigure(FigureController.FigureType figureType, Vector3 position)
     {
         GameObject prefab = null; 
-        if (figureType == FigureController.FigureType.Square) prefab = PrefabStore.Instance.GetSquarePrefab();
-        if (figureType == FigureController.FigureType.Circle) prefab = PrefabStore.Instance.GetCicrlePrefab();
+        if (figureType == FigureController.FigureType.Square) prefab = uiManager.prefabInstance.GetSquarePrefab();
+        if (figureType == FigureController.FigureType.Circle) prefab = uiManager.prefabInstance.GetCicrlePrefab();
 
         var figure = Instantiate(prefab, position, Quaternion.identity);
 
@@ -201,7 +204,6 @@ public class GameController : BaseController
                 figureOnScene.transform.position = figureOnScene.HomePosition;
                 figureOnScene.On();
             }
-
     }
 
     void Update()

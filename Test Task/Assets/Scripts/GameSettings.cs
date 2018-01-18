@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+using System.Text;
 using UnityEngine;
 
 
@@ -26,7 +24,7 @@ public class GameSettings
 
     public GameSettings()
     {
-        SourceFile = "Settings.xml";
+        SourceFile = "Settings.txt";
         Path = Application.dataPath.ToString() + "/Resources/" + SourceFile;
         SettingsGame = new Settings();
         SetSettings();
@@ -38,18 +36,17 @@ public class GameSettings
         else
         {
             CreateColorList(10);
-            CreateLastingList(20, 10);
+            CreateLastingList(5, 15, 10);
 
-            XmlSerializer settingsSerialiser = new XmlSerializer(typeof(Settings));
-            WriteSettingsToFile(settingsSerialiser, Path);
+            WriteSettingsToFile(Path);
         }
     }
 
-    private void CreateLastingList(float maxValue, int count)
+    private void CreateLastingList(float minValue, float maxValue, int count)
     {
         while (SettingsGame.ListOfTimerLastings.Count < count)
         {
-            var lasting = Random.Range(1, maxValue);
+            var lasting = Random.Range(minValue, maxValue);
             if (!SettingsGame.ListOfTimerLastings.Contains(lasting)) SettingsGame.ListOfTimerLastings.Add(lasting);
         }
     }
@@ -66,34 +63,50 @@ public class GameSettings
 
     private void ReadSettingsForGame(string fileName)
     {
-        XmlSerializer settingsSerialiser = new XmlSerializer(typeof(Settings));
-        ReadSettingsFromFile(settingsSerialiser, fileName);
+        ReadSettingsFromFile(fileName);
     }
 
-    private void ReadSettingsFromFile(XmlSerializer formatter, string fileName)
+    private void ReadSettingsFromFile(string fileName)
     {
         TextAsset textAsset = (TextAsset)Resources.Load(fileName);
-            using (TextReader list = new StringReader(textAsset.text))
-            {
-                SettingsGame = (Settings)formatter.Deserialize(list);
-            }
-    }
-
-    private void WriteSettingsToFile(XmlSerializer formatter, string fileName)
-    {
-        var path = Path;
-        using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
+        using (TextReader list = new StringReader(textAsset.text))
         {
-            formatter.Serialize(fs, SettingsGame);
+            var lastings = SettingsGame.ListOfTimerLastings;
+            var colors = SettingsGame.ListOfFigureColors;
+
+            float lasting;
+            Color color = new Color();
+
+            while (list.Peek() != -1)
+            {
+                var stringLine = list.ReadLine();
+                if (float.TryParse(stringLine, out lasting)) lastings.Add(lasting);
+                else
+                {
+                    var colorComponents = stringLine.Split(';');
+                    float.TryParse(colorComponents[0], out color.r);
+                    float.TryParse(colorComponents[1], out color.g);
+                    float.TryParse(colorComponents[2], out color.b);
+                    float.TryParse(colorComponents[3], out color.a);
+
+                    colors.Add(color);
+                }
+            }
         }
-
-
     }
 
+    private void WriteSettingsToFile(string fileName)
+    {
+        using (StreamWriter sw = new StreamWriter(fileName))
+        {
+            var lastings = SettingsGame.ListOfTimerLastings;
+            var colors = SettingsGame.ListOfFigureColors;
 
+            foreach (var lasting in lastings)
+                sw.WriteLine(lasting);
+
+            foreach (var color in colors)
+                sw.WriteLine(color.r + ";" + color.g + ";" + color.b + ";" + color.a);
+        }
+    }
 }
-
-//TextAsset textAssetColors = (TextAsset)Resources.Load("Colors");
-//TextAsset textAssetLastings = (TextAsset)Resources.Load("Lastings");
-// var listColors = list.Re
-// var colorComponents = new float[4];

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Score : MonoBehaviour
 {
@@ -17,7 +15,7 @@ public class Score : MonoBehaviour
     {
         ScoreNumber = 0;
         BestScoreNumber = 0;
-        GameNumber = 0;
+        GameNumber = -1;
         uiManager = GameObject.FindObjectOfType<UIManager>();
         uiManager.mouseInputController.SquareGotTarget += AddScore;
     }

@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class BaseController : MonoBehaviour
 {
-    private bool _enabled = false;
+    private bool _enabled;
+
+    void Awake()
+    {
+        enabled = false;
+    }
 
     public bool Enabled
     {
