@@ -1,31 +1,43 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 public class MainMenuController : BaseController
 {
 
     private RectTransform mainMenuPanel;
+    private RectTransform aboutGamePanel;
+    private bool IsAboutPanelActive;
+
     private UIManager uiManager;
 
     [SerializeField] Button buttonPlay;
     [SerializeField] Button buttonExit;
+    [SerializeField] Button buttonAbout;
     private Text startText;
     private Text gameText;
 
     void Awake()
     {
-        mainMenuPanel = GetComponent<RectTransform>();
         uiManager = GameObject.FindObjectOfType<UIManager>();
+
+        var panels = GetComponentsInChildren<RectTransform>(true).Where(rT => rT.CompareTag("Panel")).ToArray();
+        mainMenuPanel = panels[0];
+        aboutGamePanel = panels[1];
+        IsAboutPanelActive = false;
+        aboutGamePanel.gameObject.SetActive(IsAboutPanelActive);
+        aboutGamePanel.gameObject.layer++;
 
         var buttons = mainMenuPanel.GetComponentsInChildren<Button>();
         buttonPlay = buttons[0];
         buttonExit = buttons[1];
-
+        buttonAbout = buttons[2];
         AddButtonEvents();
+
         var mainMenuText = mainMenuPanel.GetComponentsInChildren<Text>();
-        startText = mainMenuText[2];
+        startText = mainMenuText[3];
         startText.text = "Game Squares";
-        gameText = mainMenuText[3];
+        gameText = mainMenuText[4];
         gameText.text = "Game Squares\n\r You got score:\n\r 0";
         gameText.gameObject.SetActive(false);
 
@@ -41,6 +53,11 @@ public class MainMenuController : BaseController
         if (buttonExit != null)
         {
             buttonExit.onClick.AddListener(EndGame);
+        }
+
+        if (buttonAbout != null)
+        {
+            buttonAbout.onClick.AddListener(AboutGame);
         }
     }
 
@@ -62,10 +79,17 @@ public class MainMenuController : BaseController
         Application.Quit();
     }
 
+    public void AboutGame()
+    {
+        if (IsAboutPanelActive) IsAboutPanelActive = false;
+        else IsAboutPanelActive = true;
+        aboutGamePanel.gameObject.SetActive(IsAboutPanelActive);        
+    }
+
     public override void On()
     {
         base.On();
-        if (mainMenuPanel != null) mainMenuPanel.gameObject.SetActive(true);
+        if(mainMenuPanel != null) mainMenuPanel.gameObject.SetActive(true);
         ShowScoreInMenu();
 
     }
